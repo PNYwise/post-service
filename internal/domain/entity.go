@@ -1,10 +1,14 @@
 package domain
 
+type Location struct {
+	Lat float64
+	Lng float64
+}
+
 type Post struct {
-}
-
-type PostRequest struct {
-}
-
-type PostResponse struct {
+	Uuid     string
+	UserUuid string
+	Caption  string
+	ImageUrl string
+	Location Location
 }
