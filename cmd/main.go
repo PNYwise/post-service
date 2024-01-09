@@ -9,13 +9,14 @@ import (
 	social_media_proto "github.com/PNYwise/post-service/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func main() {
 	time.Local = time.UTC
-	conn, err := grpc.Dial("localhost:50050", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
