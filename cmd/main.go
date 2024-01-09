@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/PNYwise/post-service/internal"
+	"github.com/PNYwise/post-service/internal/config"
 	social_media_proto "github.com/PNYwise/post-service/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -16,7 +18,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type Config struct {
+type ExtConf struct {
 	App      App      `json:"app"`
 	Database Database `json:"database"`
 }
@@ -32,20 +34,34 @@ type Database struct {
 }
 
 func main() {
+	// Set time.Local to time.UTC
 	time.Local = time.UTC
-	conn, err := grpc.Dial("localhost:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	// Initialize gRPC server
+	srv := grpc.NewServer()
+
+	// Load configuration
+	conf := config.New()
+	// Dial the gRPC server
+	grpcConn, err := grpc.Dial(
+		conf.GetString("config.host")+":"+conf.GetString("config.port"),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
+		log.Fatalf("Failed to connect to Config Service gRPC server: %v", err)
 	}
-	defer conn.Close()
+	defer grpcConn.Close()
+	log.Println("Connected to Config Service gRPC server")
 
 	// Create a gRPC client
-	client := social_media_proto.NewConfigClient(conn)
+	client := social_media_proto.NewConfigClient(grpcConn)
 
+	// Create metadata
 	md := metadata.New(map[string]string{
-		"id":    "post-service",
-		"token": "a8b90bf5e550b538b82758b970750341",
+		"id":    conf.GetString("id"),
+		"token": conf.GetString("token"),
 	})
+
 	// Add metadata to the context
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -54,16 +70,29 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error calling Get: %v", err)
 	}
-	externalConfig := &Config{}
+
+	// Parse the response
+	extConf := &ExtConf{}
 	if stringVal, ok := response.Kind.(*structpb.Value_StringValue); ok {
-		err := json.Unmarshal([]byte(stringVal.StringValue), &externalConfig)
+		err := json.Unmarshal([]byte(stringVal.StringValue), &extConf)
 		if err != nil {
-			fmt.Println("Error:", err)
-			return
+			log.Fatalf("Error unmarshaling configuration: %v", err)
 		}
 	}
-	fmt.Println(*externalConfig)
-	srv := grpc.NewServer()
+
+	// Initialize gRPC server based on retrieved configuration
 	internal.InitGrpc(srv)
 
+	// Start server
+	serverPort := strconv.Itoa(extConf.App.Port)
+	l, err := net.Listen("tcp", ":"+serverPort)
+	if err != nil {
+		log.Fatalf("Could not listen to %s: %v", ":"+serverPort, err)
+	}
+	defer l.Close()
+
+	log.Println("Server started at", ":"+serverPort)
+	if err := srv.Serve(l); err != nil {
+		log.Fatalf("Failed to start gRPC server: %v", err)
+	}
 }
