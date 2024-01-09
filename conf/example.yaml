@@ -1,6 +1,6 @@
 id: "post-service"
 name: "post-service"
 token: "ini token"
-config:
+config-service:
   host: "localhost"
   port: "50050"

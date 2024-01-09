@@ -44,7 +44,7 @@ func main() {
 	conf := config.New()
 	// Dial the gRPC server
 	grpcConn, err := grpc.Dial(
-		conf.GetString("config.host")+":"+conf.GetString("config.port"),
+		conf.GetString("config-service.host")+":"+conf.GetString("config-service.port"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
