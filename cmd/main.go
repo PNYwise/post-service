@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -13,6 +15,21 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 )
+
+type Config struct {
+	App      App      `json:"app"`
+	Database Database `json:"database"`
+}
+type App struct {
+	Port int `json:"port"`
+}
+type Database struct {
+	Host     string `json:"host"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Post     int    `json:"port"`
+}
 
 func main() {
 	time.Local = time.UTC
@@ -37,10 +54,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error calling Get: %v", err)
 	}
+	externalConfig := &Config{}
 	if stringVal, ok := response.Kind.(*structpb.Value_StringValue); ok {
-		val := stringVal
-		log.Printf(val.StringValue)
+		err := json.Unmarshal([]byte(stringVal.StringValue), &externalConfig)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
 	}
+	fmt.Println(*externalConfig)
 	srv := grpc.NewServer()
 	internal.InitGrpc(srv)
 
