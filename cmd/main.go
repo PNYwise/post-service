@@ -10,6 +10,7 @@ import (
 
 	"github.com/PNYwise/post-service/internal"
 	"github.com/PNYwise/post-service/internal/config"
+	"github.com/PNYwise/post-service/internal/domain"
 	social_media_proto "github.com/PNYwise/post-service/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -17,21 +18,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 )
-
-type ExtConf struct {
-	App      App      `json:"app"`
-	Database Database `json:"database"`
-}
-type App struct {
-	Port int `json:"port"`
-}
-type Database struct {
-	Host     string `json:"host"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
-	Post     int    `json:"port"`
-}
 
 func main() {
 	// Set time.Local to time.UTC
@@ -50,12 +36,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to Config Service gRPC server: %v", err)
 	}
-	defer grpcConn.Close()
 	log.Println("Connected to Config Service gRPC server")
 
 	// Create a gRPC client
 	client := social_media_proto.NewConfigClient(grpcConn)
-
 	// Create metadata
 	md := metadata.New(map[string]string{
 		"id":    conf.GetString("id"),
@@ -64,15 +48,14 @@ func main() {
 
 	// Add metadata to the context
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
 	// Call the Get method on the server
 	response, err := client.Get(ctx, &empty.Empty{})
 	if err != nil {
 		log.Fatalf("Error calling Get: %v", err)
 	}
-
+	grpcConn.Close()
 	// Parse the response
-	extConf := &ExtConf{}
+	extConf := &domain.ExtConf{}
 	if stringVal, ok := response.Kind.(*structpb.Value_StringValue); ok {
 		err := json.Unmarshal([]byte(stringVal.StringValue), &extConf)
 		if err != nil {
@@ -81,7 +64,7 @@ func main() {
 	}
 
 	// Initialize gRPC server based on retrieved configuration
-	internal.InitGrpc(srv)
+	internal.InitGrpc(srv, extConf)
 
 	// Start server
 	serverPort := strconv.Itoa(extConf.App.Port)
