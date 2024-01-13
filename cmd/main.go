@@ -13,6 +13,7 @@ import (
 	"github.com/PNYwise/post-service/internal/domain"
 	social_media_proto "github.com/PNYwise/post-service/proto"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -28,6 +29,7 @@ func main() {
 
 	// Load configuration
 	conf := config.New()
+
 	// Dial the gRPC server
 	grpcConn, err := grpc.Dial(
 		conf.GetString("config-service.host")+":"+conf.GetString("config-service.port"),
@@ -41,26 +43,21 @@ func main() {
 	// Create a gRPC client
 	client := social_media_proto.NewConfigClient(grpcConn)
 	// Create metadata
-	md := metadata.New(map[string]string{
-		"id":    conf.GetString("id"),
-		"token": conf.GetString("token"),
-	})
 
 	// Add metadata to the context
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx := createMetadataContext(conf)
+
 	// Call the Get method on the server
 	response, err := client.Get(ctx, &empty.Empty{})
 	if err != nil {
 		log.Fatalf("Error calling Get: %v", err)
 	}
 	grpcConn.Close()
+
 	// Parse the response
-	extConf := &domain.ExtConf{}
-	if stringVal, ok := response.Kind.(*structpb.Value_StringValue); ok {
-		err := json.Unmarshal([]byte(stringVal.StringValue), &extConf)
-		if err != nil {
-			log.Fatalf("Error unmarshaling configuration: %v", err)
-		}
+	extConf, err := parseConfigResponse(response)
+	if err != nil {
+		log.Fatalf("Error unmarshaling configuration: %v", err)
 	}
 
 	// Initialize gRPC server based on retrieved configuration
@@ -78,4 +75,21 @@ func main() {
 	if err := srv.Serve(l); err != nil {
 		log.Fatalf("Failed to start gRPC server: %v", err)
 	}
+}
+
+func createMetadataContext(conf *viper.Viper) context.Context {
+	// Add metadata to the context
+	return metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{
+		"id":    conf.GetString("id"),
+		"token": conf.GetString("token"),
+	}))
+}
+
+func parseConfigResponse(response *structpb.Value) (*domain.ExtConf, error) {
+	extConf := &domain.ExtConf{}
+	if stringVal, ok := response.Kind.(*structpb.Value_StringValue); ok {
+		err := json.Unmarshal([]byte(stringVal.StringValue), extConf)
+		return extConf, err
+	}
+	return nil, nil
 }
