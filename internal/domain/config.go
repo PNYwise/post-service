@@ -1,8 +1,8 @@
 package domain
 
 type ExtConf struct {
-	App      App      `json:"app"`
-	Database Database `json:"database"`
+	App      *App      `json:"app"`
+	Database *Database `json:"database"`
 }
 type App struct {
 	Port int `json:"port"`

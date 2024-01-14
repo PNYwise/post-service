@@ -10,7 +10,9 @@ func NewPostRepository() domain.IPostRepository {
 }
 
 func (p *postRepository) Create(post *domain.Post) (*domain.Post, error) {
-	return nil, nil
+	return &domain.Post{
+		Location: &domain.Location{},
+	}, nil
 }
 func (p *postRepository) ReadAllByUserId(user_uuid string) (*[]domain.Post, error) {
 	return nil, nil
