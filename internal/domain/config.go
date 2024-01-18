@@ -12,5 +12,5 @@ type Database struct {
 	Username string `json:"username"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
-	Post     int    `json:"port"`
+	Port     int    `json:"port"`
 }

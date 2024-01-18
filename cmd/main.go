@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/PNYwise/post-service/internal/domain"
 	social_media_proto "github.com/PNYwise/post-service/proto"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/jackc/pgx/v5"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -60,8 +62,31 @@ func main() {
 		log.Fatalf("Error unmarshaling configuration: %v", err)
 	}
 
+	// Initialize the db
+	dbConfig := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s",
+		extConf.Database.Username,
+		extConf.Database.Password,
+		extConf.Database.Host,
+		extConf.Database.Port,
+		extConf.Database.Name,
+	)
+	connConfig, err := pgx.ParseConfig(dbConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := pgx.ConnectConfig(context.Background(), connConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close(context.Background())
+
+	if err := db.Ping(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Connected to Database")
 	// Initialize gRPC server based on retrieved configuration
-	internal.InitGrpc(srv, extConf)
+	internal.InitGrpc(srv, extConf, db)
 
 	// Start server
 	serverPort := strconv.Itoa(extConf.App.Port)

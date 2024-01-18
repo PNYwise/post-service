@@ -1,12 +1,18 @@
 package repository
 
-import "github.com/PNYwise/post-service/internal/domain"
+import (
+	"github.com/PNYwise/post-service/internal/domain"
+	"github.com/jackc/pgx/v5"
+)
 
 type postRepository struct {
+	db *pgx.Conn
 }
 
-func NewPostRepository() domain.IPostRepository {
-	return &postRepository{}
+func NewPostRepository(db *pgx.Conn) domain.IPostRepository {
+	return &postRepository{
+		db: db,
+	}
 }
 
 func (p *postRepository) Create(post *domain.Post) (*domain.Post, error) {
