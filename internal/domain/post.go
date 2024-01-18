@@ -1,23 +1,23 @@
 package domain
 
 type Location struct {
-	Lat float64
-	Lng float64
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
 }
 
 type Post struct {
-	Uuid     string
-	UserUuid string
-	Caption  string
-	ImageUrl string
-	Location *Location
+	Uuid     string    `json:"uuid"`
+	UserUuid string    `json:"user_uuid"`
+	Caption  string    `json:"caption"`
+	ImageUrl string    `json:"image_url"`
+	Location *Location `json:"location"`
 }
 
 type PostRequest struct {
-	UserUuid string
-	Caption  string
-	ImageUrl string
-	Location *Location
+	UserUuid string    `json:"user_uuid"`
+	Caption  string    `json:"caption"`
+	ImageUrl string    `json:"image_url"`
+	Location *Location `json:"location"`
 }
 
 type IPostService interface {
@@ -27,7 +27,7 @@ type IPostService interface {
 }
 
 type IPostRepository interface {
-	Create(post *Post) (*Post, error)
+	Create(post *Post) error
 	ReadAllByUserId(user_uuid string) (*[]Post, error)
 	Delete(uuid string) error
 }

@@ -38,7 +38,6 @@ func (p *postHandler) Create(_ context.Context, request *social_media_proto.Post
 	if err != nil {
 		return nil, err
 	}
-
 	// response
 	return &social_media_proto.PostDetail{
 		UserUuid: postResponse.UserUuid,

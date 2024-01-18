@@ -21,8 +21,8 @@ func (p *postService) Create(request *domain.PostRequest) (*domain.Post, error) 
 		ImageUrl: request.ImageUrl,
 		Location: request.Location,
 	}
-	data, err := p.postRepository.Create(post)
-	return data, err
+	err := p.postRepository.Create(post)
+	return post, err
 }
 func (p *postService) ReadAllByUserId(uuid string) (*domain.Post, error) {
 	return nil, nil
