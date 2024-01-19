@@ -57,6 +57,8 @@ func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error
 		log.Fatal("Error executing query:", err)
 		return nil, err
 	}
+	defer rows.Close()
+
 	var posts []domain.Post
 
 	for rows.Next() {
