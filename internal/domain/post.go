@@ -22,12 +22,12 @@ type PostRequest struct {
 
 type IPostService interface {
 	Create(post *PostRequest) (*Post, error)
-	ReadAllByUserId(uuid string) (*Post, error)
+	ReadAllByUserId(uuid string) (*[]Post, error)
 	Delete(uuid string) error
 }
 
 type IPostRepository interface {
 	Create(post *Post) error
-	ReadAllByUserId(user_uuid string) (*[]Post, error)
+	ReadAllByUserId(userUuid string) (*[]Post, error)
 	Delete(uuid string) error
 }

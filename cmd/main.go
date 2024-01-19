@@ -85,6 +85,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Connected to Database")
+
 	// Initialize gRPC server based on retrieved configuration
 	internal.InitGrpc(srv, extConf, db)
 

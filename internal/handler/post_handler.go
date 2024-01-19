@@ -49,9 +49,26 @@ func (p *postHandler) Create(_ context.Context, request *social_media_proto.Post
 		},
 	}, nil
 }
-func (p *postHandler) ReadAllByUserId(context.Context, *social_media_proto.Uuid) (*social_media_proto.PostList, error) {
-	data := &social_media_proto.PostList{}
-	return data, nil
+func (p *postHandler) ReadAllByUserId(ctx context.Context, uuid *social_media_proto.Uuid) (*social_media_proto.PostList, error) {
+	posts, err := p.postService.ReadAllByUserId(uuid.Uuid)
+	if err != nil {
+		return nil, err
+	}
+	postsResponse := make([]*social_media_proto.PostDetail, len(*posts))
+
+	for i, post := range *posts {
+		postResponse := &social_media_proto.PostDetail{
+			UserUuid: post.UserUuid,
+			Caption:  post.Caption,
+			ImageUrl: post.ImageUrl,
+			Location: &social_media_proto.Location{
+				Lat: post.Location.Lat,
+				Lng: post.Location.Lng,
+			},
+		}
+		postsResponse[i] = postResponse
+	}
+	return &social_media_proto.PostList{Post: postsResponse}, nil
 }
 func (p *postHandler) Delete(context.Context, *social_media_proto.Uuid) (*empty.Empty, error) {
 	return nil, nil

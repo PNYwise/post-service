@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"github.com/PNYwise/post-service/internal/domain"
 	"github.com/jackc/pgx/v5"
@@ -23,7 +23,8 @@ func (p *postRepository) Create(post *domain.Post) error {
 
 	locationJSON, err := json.Marshal(post.Location)
 	if err != nil {
-		return fmt.Errorf("error marshaling location: %v", err)
+		log.Fatalf("error unmarshaling location: %v", err)
+		return err
 	}
 
 	query := `
@@ -37,17 +38,49 @@ func (p *postRepository) Create(post *domain.Post) error {
 		post.UserUuid, post.Caption, post.ImageUrl, locationJSON,
 	).Scan(&post.Uuid, &post.UserUuid, &post.Caption, &post.ImageUrl, &locationJSON)
 	if err != nil {
+		log.Fatalf("err: %v", err)
 		return err
 	}
 	err = json.Unmarshal(locationJSON, &post.Location)
 	if err != nil {
-		return fmt.Errorf("error unmarshaling location: %v", err)
+		log.Fatalf("error unmarshaling location: %v", err)
+		return err
 	}
 
 	return nil
 }
-func (p *postRepository) ReadAllByUserId(user_uuid string) (*[]domain.Post, error) {
-	return nil, nil
+func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error) {
+	query := `SELECT uuid, user_uuid, caption,image_url,location FROM posts p WHERE p.user_uuid = $1`
+
+	rows, err := p.db.Query(context.Background(), query, &userUuid)
+	if err != nil {
+		log.Fatal("Error executing query:", err)
+		return nil, err
+	}
+	var posts []domain.Post
+
+	for rows.Next() {
+		var post domain.Post
+		var locationJSON []byte
+		err := rows.Scan(&post.Uuid, &post.UserUuid, &post.Caption, &post.ImageUrl, &locationJSON)
+		if err != nil {
+			log.Fatal("Error scanning row:", err)
+			return nil, err
+		}
+		err = json.Unmarshal(locationJSON, &post.Location)
+		if err != nil {
+			log.Fatalf("error unmarshaling location: %v", err)
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatalf("Error iterating over rows: %v", err)
+		return nil, err
+	}
+
+	return &posts, nil
 }
 func (p *postRepository) Delete(uuid string) error {
 	return nil

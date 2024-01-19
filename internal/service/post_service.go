@@ -24,8 +24,8 @@ func (p *postService) Create(request *domain.PostRequest) (*domain.Post, error) 
 	err := p.postRepository.Create(post)
 	return post, err
 }
-func (p *postService) ReadAllByUserId(uuid string) (*domain.Post, error) {
-	return nil, nil
+func (p *postService) ReadAllByUserId(userUuid string) (*[]domain.Post, error) {
+	return p.postRepository.ReadAllByUserId(userUuid)
 }
 func (p *postService) Delete(uuid string) error {
 	return nil
