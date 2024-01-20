@@ -40,6 +40,7 @@ func (p *postHandler) Create(_ context.Context, request *social_media_proto.Post
 	}
 	// response
 	return &social_media_proto.PostDetail{
+		Uuid:     postResponse.Uuid,
 		UserUuid: postResponse.UserUuid,
 		Caption:  postResponse.Caption,
 		ImageUrl: postResponse.ImageUrl,
@@ -58,6 +59,7 @@ func (p *postHandler) ReadAllByUserId(ctx context.Context, uuid *social_media_pr
 
 	for i, post := range *posts {
 		postResponse := &social_media_proto.PostDetail{
+			Uuid:     post.Uuid,
 			UserUuid: post.UserUuid,
 			Caption:  post.Caption,
 			ImageUrl: post.ImageUrl,
@@ -70,6 +72,9 @@ func (p *postHandler) ReadAllByUserId(ctx context.Context, uuid *social_media_pr
 	}
 	return &social_media_proto.PostList{Post: postsResponse}, nil
 }
-func (p *postHandler) Delete(context.Context, *social_media_proto.Uuid) (*empty.Empty, error) {
-	return nil, nil
+func (p *postHandler) Delete(ctx context.Context, uuid *social_media_proto.Uuid) (*empty.Empty, error) {
+	if err := p.postService.Delete(uuid.Uuid); err != nil {
+		return nil, err
+	}
+	return &empty.Empty{}, nil
 }

@@ -4,7 +4,7 @@
 // - protoc             v3.6.1
 // source: post.proto
 
-package social_media_proto
+package post_service
 
 import (
 	context "context"

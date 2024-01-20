@@ -28,5 +28,5 @@ func (p *postService) ReadAllByUserId(userUuid string) (*[]domain.Post, error) {
 	return p.postRepository.ReadAllByUserId(userUuid)
 }
 func (p *postService) Delete(uuid string) error {
-	return nil
+	return p.postRepository.Delete(uuid)
 }

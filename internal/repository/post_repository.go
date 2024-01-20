@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/PNYwise/post-service/internal/domain"
 	"github.com/jackc/pgx/v5"
@@ -50,7 +52,11 @@ func (p *postRepository) Create(post *domain.Post) error {
 	return nil
 }
 func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error) {
-	query := `SELECT uuid, user_uuid, caption,image_url,location FROM posts p WHERE p.user_uuid = $1`
+	query := `
+	SELECT
+	 uuid, user_uuid, caption,image_url,location 
+	FROM posts p 
+	WHERE p.user_uuid = $1 and deleted_at is null`
 
 	rows, err := p.db.Query(context.Background(), query, &userUuid)
 	if err != nil {
@@ -85,5 +91,22 @@ func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error
 	return &posts, nil
 }
 func (p *postRepository) Delete(uuid string) error {
+	query := `UPDATE posts SET deleted_at = $1 WHERE uuid = $2 and deleted_at is null`
+	result, err := p.db.Exec(
+		context.Background(),
+		query,
+		time.Now(),
+		&uuid,
+	)
+	if err != nil {
+		log.Fatalf("error executing query: %v", err)
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("post with UUID %s not found", uuid)
+	}
+
 	return nil
 }
