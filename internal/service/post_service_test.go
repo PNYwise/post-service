@@ -4,37 +4,15 @@ import (
 	"testing"
 
 	"github.com/PNYwise/post-service/internal/domain"
+	"github.com/PNYwise/post-service/internal/repository/_mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockPostRepository is a mock implementation of IPostRepository
-type MockPostRepository struct {
-	mock.Mock
-}
-
-// Create mocks the Create method of IPostRepository
-func (m *MockPostRepository) Create(post *domain.Post) error {
-	args := m.Called(post)
-	return args.Error(0)
-}
-
-// ReadAllByUserId mocks the ReadAllByUserId method of IPostRepository
-func (m *MockPostRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error) {
-	args := m.Called(userUuid)
-	return args.Get(0).(*[]domain.Post), args.Error(1)
-}
-
-// Delete mocks the Delete method of IPostRepository
-func (m *MockPostRepository) Delete(uuid string) error {
-	args := m.Called(uuid)
-	return args.Error(0)
-}
-
 func TestCreatePost(t *testing.T) {
 	// Create a mock repository
-	mockRepo := new(MockPostRepository)
+	mockRepo := new(_mock.MockPostRepository)
 
 	// Create a post service with the mock repository
 	postService := NewPostService(mockRepo)
@@ -71,7 +49,7 @@ func TestCreatePost(t *testing.T) {
 
 func TestReadAllByUserId(t *testing.T) {
 	// Create a mock repository
-	mockRepo := new(MockPostRepository)
+	mockRepo := new(_mock.MockPostRepository)
 
 	// Create a post service with the mock repository
 	postService := NewPostService(mockRepo)
@@ -109,4 +87,28 @@ func TestReadAllByUserId(t *testing.T) {
 	// Assert that the returned posts and error match the expected values
 	assert.NoError(t, err)
 	assert.Equal(t, fakePosts, *resultPosts)
+}
+
+func TestDeletePost(t *testing.T) {
+	// Create a mock repository
+	mockRepo := new(_mock.MockPostRepository)
+
+	// Create a post service with the mock repository
+	postService := NewPostService(mockRepo)
+
+	// Define a fake user UUID
+	fakeUUID := uuid.New().String()
+
+	// Expect the Delete method to be called with the correct argument
+	mockRepo.On("Delete", fakeUUID).Return(nil)
+
+	// Call the Delete method of the post service
+	err := postService.Delete(fakeUUID)
+
+	// Assert that the mock repository's Delete method was called with the correct argument
+	mockRepo.AssertExpectations(t)
+
+	// Assert that the returned posts and error match the expected values
+	assert.NoError(t, err)
+	assert.Equal(t, nil, err)
 }
