@@ -77,7 +77,7 @@ func TestReadAllByUserId(t *testing.T) {
 	postService := NewPostService(mockRepo)
 
 	// Define a fake user UUID
-	fakeUserUUID := "fakeUser123"
+	fakeUserUUID := uuid.New().String()
 
 	// Create an example list of posts for the user
 	fakePosts := []domain.Post{
