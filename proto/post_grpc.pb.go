@@ -9,6 +9,7 @@ package post_service
 import (
 	context "context"
 	empty "github.com/golang/protobuf/ptypes/empty"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -22,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Post_Create_FullMethodName          = "/social_media.Post/Create"
 	Post_ReadAllByUserId_FullMethodName = "/social_media.Post/ReadAllByUserId"
+	Post_Exist_FullMethodName           = "/social_media.Post/Exist"
 	Post_Delete_FullMethodName          = "/social_media.Post/Delete"
 )
 
@@ -31,6 +33,7 @@ const (
 type PostClient interface {
 	Create(ctx context.Context, in *PostDetail, opts ...grpc.CallOption) (*PostDetail, error)
 	ReadAllByUserId(ctx context.Context, in *Uuid, opts ...grpc.CallOption) (*PostList, error)
+	Exist(ctx context.Context, in *Uuid, opts ...grpc.CallOption) (*wrappers.BoolValue, error)
 	Delete(ctx context.Context, in *Uuid, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
@@ -60,6 +63,15 @@ func (c *postClient) ReadAllByUserId(ctx context.Context, in *Uuid, opts ...grpc
 	return out, nil
 }
 
+func (c *postClient) Exist(ctx context.Context, in *Uuid, opts ...grpc.CallOption) (*wrappers.BoolValue, error) {
+	out := new(wrappers.BoolValue)
+	err := c.cc.Invoke(ctx, Post_Exist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *postClient) Delete(ctx context.Context, in *Uuid, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, Post_Delete_FullMethodName, in, out, opts...)
@@ -75,6 +87,7 @@ func (c *postClient) Delete(ctx context.Context, in *Uuid, opts ...grpc.CallOpti
 type PostServer interface {
 	Create(context.Context, *PostDetail) (*PostDetail, error)
 	ReadAllByUserId(context.Context, *Uuid) (*PostList, error)
+	Exist(context.Context, *Uuid) (*wrappers.BoolValue, error)
 	Delete(context.Context, *Uuid) (*empty.Empty, error)
 	mustEmbedUnimplementedPostServer()
 }
@@ -88,6 +101,9 @@ func (UnimplementedPostServer) Create(context.Context, *PostDetail) (*PostDetail
 }
 func (UnimplementedPostServer) ReadAllByUserId(context.Context, *Uuid) (*PostList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadAllByUserId not implemented")
+}
+func (UnimplementedPostServer) Exist(context.Context, *Uuid) (*wrappers.BoolValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Exist not implemented")
 }
 func (UnimplementedPostServer) Delete(context.Context, *Uuid) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -141,6 +157,24 @@ func _Post_ReadAllByUserId_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Post_Exist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Uuid)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServer).Exist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Post_Exist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServer).Exist(ctx, req.(*Uuid))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Post_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Uuid)
 	if err := dec(in); err != nil {
@@ -173,6 +207,10 @@ var Post_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReadAllByUserId",
 			Handler:    _Post_ReadAllByUserId_Handler,
+		},
+		{
+			MethodName: "Exist",
+			Handler:    _Post_Exist_Handler,
 		},
 		{
 			MethodName: "Delete",

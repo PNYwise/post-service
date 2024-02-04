@@ -72,6 +72,8 @@ func (p *postHandler) ReadAllByUserId(ctx context.Context, uuid *social_media_pr
 	}
 	return &social_media_proto.PostList{Post: postsResponse}, nil
 }
+
+
 func (p *postHandler) Delete(ctx context.Context, uuid *social_media_proto.Uuid) (*empty.Empty, error) {
 	if err := p.postService.Delete(uuid.Uuid); err != nil {
 		return nil, err
