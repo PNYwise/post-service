@@ -90,6 +90,25 @@ func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error
 
 	return &posts, nil
 }
+
+// Exist implements domain.IPostRepository.
+func (p *postRepository) Exist(uuid string) (bool, error) {
+	query := "SELECT EXISTS(SELECT 1 FROM posts WHERE uuid = $1)"
+	var exist bool
+	row, err := p.db.Query(context.Background(), query, uuid)
+	if err != nil {
+		log.Fatalf("Error executing query: %v", err)
+		return false, err
+	}
+	for row.Next() {
+		if err := row.Scan(&exist); err != nil {
+			log.Fatalf("Error Scaning query: %v", err)
+			return false, err
+		}
+	}
+	return exist, nil
+}
+
 func (p *postRepository) Delete(uuid string) error {
 	query := `UPDATE posts SET deleted_at = $1 WHERE uuid = $2 and deleted_at is null`
 	result, err := p.db.Exec(

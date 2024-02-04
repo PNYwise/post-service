@@ -22,6 +22,12 @@ func (m *MockPostRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, e
 	return args.Get(0).(*[]domain.Post), args.Error(1)
 }
 
+// Exist mocks the Exist method of IPostRepository
+func (m *MockPostRepository) Exist(uuid string) (bool, error) {
+	args := m.Called(uuid)
+	return args.Get(0).(bool), args.Error(1)
+}
+
 // Delete mocks the Delete method of IPostRepository
 func (m *MockPostRepository) Delete(uuid string) error {
 	args := m.Called(uuid)

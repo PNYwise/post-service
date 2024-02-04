@@ -89,6 +89,30 @@ func TestReadAllByUserId(t *testing.T) {
 	assert.Equal(t, fakePosts, *resultPosts)
 }
 
+func TestExist(t *testing.T) {
+	// Create a mock repository
+	mockRepo := new(_mock.MockPostRepository)
+
+	// Create a post service with the mock repository
+	postService := NewPostService(mockRepo)
+
+	// Define a fake user UUID
+	fakeUUID := uuid.New().String()
+
+	// Expect the Exist method to be called with the correct argument
+	mockRepo.On("Exist", fakeUUID).Return(true, nil)
+
+	// Call the Exist method of the post service
+	exist, err := postService.Exist(fakeUUID)
+
+	// Assert that the mock repository's Exist method was called with the correct argument
+	mockRepo.AssertExpectations(t)
+
+	// Assert that the returned bool and error match the expected values
+	assert.NoError(t, err)
+	assert.Equal(t, exist, true)
+}
+
 func TestDeletePost(t *testing.T) {
 	// Create a mock repository
 	mockRepo := new(_mock.MockPostRepository)

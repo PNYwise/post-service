@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/PNYwise/post-service/internal/domain"
 )
 
@@ -27,6 +29,16 @@ func (p *postService) Create(request *domain.PostRequest) (*domain.Post, error) 
 func (p *postService) ReadAllByUserId(userUuid string) (*[]domain.Post, error) {
 	return p.postRepository.ReadAllByUserId(userUuid)
 }
+
+// Exist implements domain.IPostService.
+func (p *postService) Exist(uuid string) (bool, error) {
+	exist, err := p.postRepository.Exist(uuid)
+	if err != nil {
+		return false, errors.New("internal server error")
+	}
+	return exist, nil
+}
+
 func (p *postService) Delete(uuid string) error {
 	return p.postRepository.Delete(uuid)
 }

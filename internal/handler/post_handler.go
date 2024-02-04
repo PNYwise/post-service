@@ -6,6 +6,7 @@ import (
 	"github.com/PNYwise/post-service/internal/domain"
 	social_media_proto "github.com/PNYwise/post-service/proto"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 )
 
 type postHandler struct {
@@ -73,6 +74,13 @@ func (p *postHandler) ReadAllByUserId(ctx context.Context, uuid *social_media_pr
 	return &social_media_proto.PostList{Post: postsResponse}, nil
 }
 
+func (p *postHandler) Exist(ctx context.Context, uuid *social_media_proto.Uuid) (*wrappers.BoolValue, error) {
+	exist, err := p.postService.Exist(uuid.Uuid)
+	if err != nil {
+		return nil, err
+	}
+	return &wrappers.BoolValue{Value: exist}, nil
+}
 
 func (p *postHandler) Delete(ctx context.Context, uuid *social_media_proto.Uuid) (*empty.Empty, error) {
 	if err := p.postService.Delete(uuid.Uuid); err != nil {
