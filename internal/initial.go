@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/IBM/sarama"
 	"github.com/PNYwise/post-service/internal/domain"
 	"github.com/PNYwise/post-service/internal/handler"
 	"github.com/PNYwise/post-service/internal/repository"
@@ -10,9 +11,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-func InitGrpc(srv *grpc.Server, extConf *domain.ExtConf, db *pgx.Conn) {
+func InitGrpc(srv *grpc.Server, extConf *domain.ExtConf, db *pgx.Conn, producer sarama.SyncProducer) {
+	kafkaPostRepository := repository.NewKafkaPostRepository(producer)
 	postRepostory := repository.NewPostRepository(db)
-	postService := service.NewPostService(postRepostory)
+	postService := service.NewPostService(postRepostory, kafkaPostRepository)
 	postHandlers := handler.NewPostHandler(extConf, postService)
 	social_media_proto.RegisterPostServer(srv, postHandlers)
 }

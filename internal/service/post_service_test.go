@@ -7,21 +7,30 @@ import (
 	"github.com/PNYwise/post-service/internal/repository/_mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestCreatePost(t *testing.T) {
 	// Create a mock repository
 	mockRepo := new(_mock.MockPostRepository)
-
+	kafkaPostRepository := new(_mock.MockKafkaPostRepository)
 	// Create a post service with the mock repository
-	postService := NewPostService(mockRepo)
+	postService := NewPostService(mockRepo, kafkaPostRepository)
 
-	fakeUUID := uuid.New().String()
+	fakeUserUUID := uuid.New().String()
 
 	// Create a sample post request
 	postRequest := &domain.PostRequest{
-		UserUuid: fakeUUID,
+		UserUuid: fakeUserUUID,
+		Caption:  "",
+		ImageUrl: "http://example.com/image.jpg",
+		Location: &domain.Location{
+			Lat: 746.9327140312029,
+			Lng: 400.7438706958651,
+		},
+	}
+
+	post := &domain.Post{
+		UserUuid: fakeUserUUID,
 		Caption:  "",
 		ImageUrl: "http://example.com/image.jpg",
 		Location: &domain.Location{
@@ -31,7 +40,8 @@ func TestCreatePost(t *testing.T) {
 	}
 
 	// Expect the Create method to be called with the correct argument
-	mockRepo.On("Create", mock.Anything).Return(nil)
+	mockRepo.On("Create", post).Return(nil)
+	kafkaPostRepository.On("PublishMessage", post).Return(nil)
 
 	// Call the Create method of the post service
 	createdPost, err := postService.Create(postRequest)
@@ -50,9 +60,9 @@ func TestCreatePost(t *testing.T) {
 func TestReadAllByUserId(t *testing.T) {
 	// Create a mock repository
 	mockRepo := new(_mock.MockPostRepository)
-
+	kafkaPostRepo := new(_mock.MockKafkaPostRepository)
 	// Create a post service with the mock repository
-	postService := NewPostService(mockRepo)
+	postService := NewPostService(mockRepo, kafkaPostRepo)
 
 	// Define a fake user UUID
 	fakeUserUUID := uuid.New().String()
@@ -92,9 +102,9 @@ func TestReadAllByUserId(t *testing.T) {
 func TestExist(t *testing.T) {
 	// Create a mock repository
 	mockRepo := new(_mock.MockPostRepository)
-
+	kafkaPostRepo := new(_mock.MockKafkaPostRepository)
 	// Create a post service with the mock repository
-	postService := NewPostService(mockRepo)
+	postService := NewPostService(mockRepo, kafkaPostRepo)
 
 	// Define a fake user UUID
 	fakeUUID := uuid.New().String()
@@ -116,9 +126,10 @@ func TestExist(t *testing.T) {
 func TestDeletePost(t *testing.T) {
 	// Create a mock repository
 	mockRepo := new(_mock.MockPostRepository)
+	kafkaPostRepo := new(_mock.MockKafkaPostRepository)
 
 	// Create a post service with the mock repository
-	postService := NewPostService(mockRepo)
+	postService := NewPostService(mockRepo, kafkaPostRepo)
 
 	// Define a fake user UUID
 	fakeUUID := uuid.New().String()

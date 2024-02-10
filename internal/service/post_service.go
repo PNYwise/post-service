@@ -8,12 +8,14 @@ import (
 )
 
 type postService struct {
-	postRepository domain.IPostRepository
+	postRepository      domain.IPostRepository
+	kafkaPostRepository domain.KafkaPostRepository
 }
 
-func NewPostService(postRepository domain.IPostRepository) domain.IPostService {
+func NewPostService(postRepository domain.IPostRepository, kafkaPostRepository domain.KafkaPostRepository) domain.IPostService {
 	return &postService{
-		postRepository: postRepository,
+		postRepository:      postRepository,
+		kafkaPostRepository: kafkaPostRepository,
 	}
 }
 
@@ -28,6 +30,9 @@ func (p *postService) Create(request *domain.PostRequest) (*domain.Post, error) 
 		Location: request.Location,
 	}
 	if err := p.postRepository.Create(post); err != nil {
+		return nil, errors.New("Internal Server Error")
+	}
+	if err := p.kafkaPostRepository.PublishMessage(post); err != nil {
 		return nil, errors.New("Internal Server Error")
 	}
 	return post, nil

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/PNYwise/post-service/internal"
 	"github.com/PNYwise/post-service/internal/config"
 	"github.com/PNYwise/post-service/internal/domain"
@@ -86,8 +87,19 @@ func main() {
 	}
 	log.Println("Connected to Database")
 
+	// Kafka broker address
+	brokerList := []string{"127.0.0.1:9092"}
+
+	// Initialize Kafka producer configuration
+	config := sarama.NewConfig()
+	config.Producer.Return.Successes = true
+	producer, err := sarama.NewSyncProducer(brokerList, config)
+	if err != nil {
+		log.Fatal("error to creates a new sync producer")
+	}
+
 	// Initialize gRPC server based on retrieved configuration
-	internal.InitGrpc(srv, extConf, db)
+	internal.InitGrpc(srv, extConf, db, producer)
 
 	// Start server
 	serverPort := strconv.Itoa(extConf.App.Port)

@@ -33,3 +33,7 @@ type IPostRepository interface {
 	Exist(uuid string) (bool, error)
 	Delete(uuid string) error
 }
+
+type KafkaPostRepository interface {
+	PublishMessage(post *Post) error
+}

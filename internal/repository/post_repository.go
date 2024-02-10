@@ -25,7 +25,7 @@ func (p *postRepository) Create(post *domain.Post) error {
 
 	locationJSON, err := json.Marshal(post.Location)
 	if err != nil {
-		log.Fatalf("error unmarshaling location: %v", err)
+		log.Fatalf("error marshaling location: %v", err)
 		return err
 	}
 
