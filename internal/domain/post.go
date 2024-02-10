@@ -1,8 +1,8 @@
 package domain
 
 type Location struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
+	Lat float64 `json:"lat" validate:"number"`
+	Lng float64 `json:"lng" validate:"number"`
 }
 
 type Post struct {
@@ -14,8 +14,8 @@ type Post struct {
 }
 
 type PostRequest struct {
-	UserUuid string    `json:"user_uuid"`
-	Caption  string    `json:"caption"`
+	UserUuid string    `json:"user_uuid" validate:"required,uuid4"`
+	Caption  string    `json:"caption" validate:"-"`
 	ImageUrl string    `json:"image_url"`
 	Location *Location `json:"location"`
 }

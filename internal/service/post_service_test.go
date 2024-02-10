@@ -22,7 +22,7 @@ func TestCreatePost(t *testing.T) {
 	// Create a sample post request
 	postRequest := &domain.PostRequest{
 		UserUuid: fakeUUID,
-		Caption:  "Test caption",
+		Caption:  "",
 		ImageUrl: "http://example.com/image.jpg",
 		Location: &domain.Location{
 			Lat: 746.9327140312029,
