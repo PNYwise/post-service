@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func InitGrpc(srv *grpc.Server, extConf *domain.ExtConf, db *pgx.Conn, producer sarama.AsyncProducer) {
+func InitGrpc(srv *grpc.Server, extConf *domain.ExtConf, db *pgx.Conn, producer sarama.SyncProducer) {
 	kafkaPostRepository := repository.NewKafkaPostRepository(producer)
 	postRepostory := repository.NewPostRepository(db)
 	postService := service.NewPostService(postRepostory, kafkaPostRepository)

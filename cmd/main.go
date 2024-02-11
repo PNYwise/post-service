@@ -93,13 +93,13 @@ func main() {
 	// Initialize Kafka producer configuration
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
-	producer, err := sarama.NewAsyncProducer(brokerList, config)
+	producer, err := sarama.NewSyncProducer(brokerList, config)
 	if err != nil {
 		log.Fatal("error to creates a new sync producer")
 	}
 	defer func() {
 		if err := producer.Close(); err != nil {
-			log.Fatal("error closing Kafka producer:", err)
+			log.Fatalf("Error closing Kafka producer: %v", err)
 		}
 	}()
 

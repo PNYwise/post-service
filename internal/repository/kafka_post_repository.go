@@ -9,10 +9,10 @@ import (
 )
 
 type kafkaPostRepository struct {
-	producer sarama.AsyncProducer
+	producer sarama.SyncProducer
 }
 
-func NewKafkaPostRepository(producer sarama.AsyncProducer) domain.KafkaPostRepository {
+func NewKafkaPostRepository(producer sarama.SyncProducer) domain.KafkaPostRepository {
 	return &kafkaPostRepository{
 		producer: producer,
 	}
@@ -22,21 +22,12 @@ func NewKafkaPostRepository(producer sarama.AsyncProducer) domain.KafkaPostRepos
 func (k *kafkaPostRepository) PublishMessage(post *domain.Post) error {
 	jsonMessage, err := json.Marshal(post)
 	if err != nil {
-		fmt.Printf("error mashaling post: %v", err)
+		fmt.Printf("error to mashal %v", err)
 		return err
 	}
-	// Construct the ProducerMessage
-	msg := &sarama.ProducerMessage{
+	_, _, err = k.producer.SendMessage(&sarama.ProducerMessage{
 		Topic: "post",
 		Value: sarama.ByteEncoder(jsonMessage),
-	}
-	// Send the message and handle any errors
-	select {
-	case k.producer.Input() <- msg:
-		// Message sent successfully
-		return nil
-	case err := <-k.producer.Errors():
-		fmt.Printf("Error occurred while sending the message: %v", err)
-		return err
-	}
+	})
+	return err
 }
