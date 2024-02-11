@@ -76,13 +76,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := pgx.ConnectConfig(context.Background(), connConfig)
+	db, err := pgx.ConnectConfig(ctx, connConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close(context.Background())
+	defer db.Close(ctx)
 
-	if err := db.Ping(context.Background()); err != nil {
+	if err := db.Ping(ctx); err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Connected to Database")
@@ -93,10 +93,15 @@ func main() {
 	// Initialize Kafka producer configuration
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
-	producer, err := sarama.NewSyncProducer(brokerList, config)
+	producer, err := sarama.NewAsyncProducer(brokerList, config)
 	if err != nil {
 		log.Fatal("error to creates a new sync producer")
 	}
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Fatal("error closing Kafka producer:", err)
+		}
+	}()
 
 	// Initialize gRPC server based on retrieved configuration
 	internal.InitGrpc(srv, extConf, db, producer)
