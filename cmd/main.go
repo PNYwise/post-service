@@ -88,7 +88,9 @@ func main() {
 	log.Println("Connected to Database")
 
 	// Kafka broker address
-	brokerList := []string{"127.0.0.1:9092"}
+	brokerList := []string{
+		fmt.Sprintf("%s:%d", extConf.Kafka.Host, extConf.Kafka.Port),
+	}
 
 	// Initialize Kafka producer configuration
 	config := sarama.NewConfig()
@@ -102,6 +104,7 @@ func main() {
 			log.Fatalf("Error closing Kafka producer: %v", err)
 		}
 	}()
+	log.Println("Connected to Kafka")
 
 	// Initialize gRPC server based on retrieved configuration
 	internal.InitGrpc(srv, extConf, db, producer)

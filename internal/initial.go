@@ -12,7 +12,7 @@ import (
 )
 
 func InitGrpc(srv *grpc.Server, extConf *domain.ExtConf, db *pgx.Conn, producer sarama.SyncProducer) {
-	kafkaPostRepository := repository.NewKafkaPostRepository(producer)
+	kafkaPostRepository := repository.NewKafkaPostRepository(producer, extConf)
 	postRepostory := repository.NewPostRepository(db)
 	postService := service.NewPostService(postRepostory, kafkaPostRepository)
 	postHandlers := handler.NewPostHandler(extConf, postService)

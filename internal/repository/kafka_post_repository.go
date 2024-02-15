@@ -10,11 +10,13 @@ import (
 
 type kafkaPostRepository struct {
 	producer sarama.SyncProducer
+	extConf  *domain.ExtConf
 }
 
-func NewKafkaPostRepository(producer sarama.SyncProducer) domain.KafkaPostRepository {
+func NewKafkaPostRepository(producer sarama.SyncProducer, extConf *domain.ExtConf) domain.KafkaPostRepository {
 	return &kafkaPostRepository{
 		producer: producer,
+		extConf:  extConf,
 	}
 }
 
@@ -26,7 +28,7 @@ func (k *kafkaPostRepository) PublishMessage(post *domain.Post) error {
 		return err
 	}
 	_, _, err = k.producer.SendMessage(&sarama.ProducerMessage{
-		Topic: "post",
+		Topic: k.extConf.Kafka.Topic,
 		Value: sarama.ByteEncoder(jsonMessage),
 	})
 	return err
