@@ -29,23 +29,24 @@ func (p *postRepository) Create(post *domain.Post) error {
 		return err
 	}
 
+	imageUrlJSON, err := json.Marshal(post.ImageUrl)
+	if err != nil {
+		log.Fatalf("error marshaling image URLs: %v", err)
+		return err
+	}
+
 	query := `
 	INSERT INTO posts (user_uuid, caption, image_url, location)
 	VALUES ($1, $2, $3, $4)
-	RETURNING uuid, user_uuid, caption, image_url, location
+	RETURNING uuid
 `
 	err = p.db.QueryRow(
 		context.Background(),
 		query,
-		post.UserUuid, post.Caption, post.ImageUrl, locationJSON,
-	).Scan(&post.Uuid, &post.UserUuid, &post.Caption, &post.ImageUrl, &locationJSON)
+		post.UserUuid, post.Caption, imageUrlJSON, locationJSON,
+	).Scan(&post.Uuid)
 	if err != nil {
 		log.Fatalf("err: %v", err)
-		return err
-	}
-	err = json.Unmarshal(locationJSON, &post.Location)
-	if err != nil {
-		log.Fatalf("error unmarshaling location: %v", err)
 		return err
 	}
 
@@ -70,7 +71,8 @@ func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error
 	for rows.Next() {
 		var post domain.Post
 		var locationJSON []byte
-		err := rows.Scan(&post.Uuid, &post.UserUuid, &post.Caption, &post.ImageUrl, &locationJSON)
+		var imageUrlJSON []byte
+		err := rows.Scan(&post.Uuid, &post.UserUuid, &post.Caption, &imageUrlJSON, &locationJSON)
 		if err != nil {
 			log.Fatal("Error scanning row:", err)
 			return nil, err
@@ -78,6 +80,11 @@ func (p *postRepository) ReadAllByUserId(userUuid string) (*[]domain.Post, error
 		err = json.Unmarshal(locationJSON, &post.Location)
 		if err != nil {
 			log.Fatalf("error unmarshaling location: %v", err)
+			return nil, err
+		}
+		err = json.Unmarshal(imageUrlJSON, &post.ImageUrl)
+		if err != nil {
+			log.Fatalf("error unmarshaling image url: %v", err)
 			return nil, err
 		}
 		posts = append(posts, post)

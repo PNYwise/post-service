@@ -9,14 +9,14 @@ type Post struct {
 	Uuid     string    `json:"uuid"`
 	UserUuid string    `json:"user_uuid"`
 	Caption  string    `json:"caption"`
-	ImageUrl string    `json:"image_url"`
+	ImageUrl []string  `json:"image_url"`
 	Location *Location `json:"location"`
 }
 
 type PostRequest struct {
 	UserUuid string    `json:"user_uuid" validate:"required,uuid4"`
 	Caption  string    `json:"caption" validate:"-"`
-	ImageUrl string    `json:"image_url"`
+	ImageUrl []string  `json:"image_url"`
 	Location *Location `json:"location"`
 }
 

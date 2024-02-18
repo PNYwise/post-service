@@ -22,7 +22,7 @@ func TestCreatePost(t *testing.T) {
 	postRequest := &domain.PostRequest{
 		UserUuid: fakeUserUUID,
 		Caption:  "",
-		ImageUrl: "http://example.com/image.jpg",
+		ImageUrl: []string{"http://example.com/image.jpg"},
 		Location: &domain.Location{
 			Lat: 746.9327140312029,
 			Lng: 400.7438706958651,
@@ -32,7 +32,7 @@ func TestCreatePost(t *testing.T) {
 	post := &domain.Post{
 		UserUuid: fakeUserUUID,
 		Caption:  "",
-		ImageUrl: "http://example.com/image.jpg",
+		ImageUrl: []string{"http://example.com/image.jpg"},
 		Location: &domain.Location{
 			Lat: 746.9327140312029,
 			Lng: 400.7438706958651,
@@ -70,14 +70,14 @@ func TestReadAllByUserId(t *testing.T) {
 	// Create an example list of posts for the user
 	fakePosts := []domain.Post{
 		{
-			UserUuid: fakeUserUUID, Caption: "Post 1", ImageUrl: "http://example.com/image.jpg",
+			UserUuid: fakeUserUUID, Caption: "Post 1", ImageUrl: []string{"http://example.com/image.jpg"},
 			Location: &domain.Location{
 				Lat: 746.9327140312029,
 				Lng: 400.7438706958651,
 			},
 		},
 		{
-			UserUuid: fakeUserUUID, Caption: "Post 2", ImageUrl: "http://example.com/image.jpg",
+			UserUuid: fakeUserUUID, Caption: "Post 2", ImageUrl: []string{"http://example.com/image.jpg"},
 			Location: &domain.Location{
 				Lat: 746.9327140312029,
 				Lng: 400.7438706958651,
