@@ -9,12 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var mockRepo = new(_mock.MockPostRepository)
+var kafkaPostRepo = new(_mock.MockKafkaPostRepository)
+
 func TestCreatePost(t *testing.T) {
 	// Create a mock repository
-	mockRepo := new(_mock.MockPostRepository)
-	kafkaPostRepository := new(_mock.MockKafkaPostRepository)
 	// Create a post service with the mock repository
-	postService := NewPostService(mockRepo, kafkaPostRepository)
+	postService := NewPostService(mockRepo, kafkaPostRepo)
 
 	fakeUserUUID := uuid.New().String()
 
@@ -41,7 +42,7 @@ func TestCreatePost(t *testing.T) {
 
 	// Expect the Create method to be called with the correct argument
 	mockRepo.On("Create", post).Return(nil)
-	kafkaPostRepository.On("PublishMessage", post).Return(nil)
+	kafkaPostRepo.On("PublishMessage", post).Return(nil)
 
 	// Call the Create method of the post service
 	createdPost, err := postService.Create(postRequest)
@@ -58,9 +59,7 @@ func TestCreatePost(t *testing.T) {
 }
 
 func TestReadAllByUserId(t *testing.T) {
-	// Create a mock repository
-	mockRepo := new(_mock.MockPostRepository)
-	kafkaPostRepo := new(_mock.MockKafkaPostRepository)
+
 	// Create a post service with the mock repository
 	postService := NewPostService(mockRepo, kafkaPostRepo)
 
@@ -100,9 +99,6 @@ func TestReadAllByUserId(t *testing.T) {
 }
 
 func TestExist(t *testing.T) {
-	// Create a mock repository
-	mockRepo := new(_mock.MockPostRepository)
-	kafkaPostRepo := new(_mock.MockKafkaPostRepository)
 	// Create a post service with the mock repository
 	postService := NewPostService(mockRepo, kafkaPostRepo)
 
@@ -124,9 +120,6 @@ func TestExist(t *testing.T) {
 }
 
 func TestDeletePost(t *testing.T) {
-	// Create a mock repository
-	mockRepo := new(_mock.MockPostRepository)
-	kafkaPostRepo := new(_mock.MockKafkaPostRepository)
 
 	// Create a post service with the mock repository
 	postService := NewPostService(mockRepo, kafkaPostRepo)
